@@ -1,0 +1,8 @@
+---
+# handlers file for install_httpd
+
+- name: Restart Apache
+  service: name=httpd state=restarted
+
+- name: Restart Firewalld
+  service: name=firewalld state=restarted

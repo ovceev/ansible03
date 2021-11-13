@@ -1,0 +1,19 @@
+---
+# tasks file for install_httpd
+
+- name: Install Apache and Firewalld
+  yum: name={{ item }} state=latest
+  loop:
+    - httpd
+    - firewalld
+
+- name: Start and enable on startup
+  service: name=httpd state=started enabled=yes
+
+- name: Copy index.html page
+  copy: content="This is a host with {{ ansible_os_family }} OS" dest={{ f }}
+  notify: Restart Apache
+
+- name: Open http port
+  firewalld: service=http permanent=true state=enabled
+  notify: Restart Firewalld

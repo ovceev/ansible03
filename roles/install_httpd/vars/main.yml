@@ -1,0 +1,4 @@
+---
+# vars file for install_httpd
+
+f: /var/www/html/index.html

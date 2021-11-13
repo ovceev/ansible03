@@ -1,0 +1,7 @@
+---
+- name: Install Apache and upload index.html
+  hosts: all
+  become: yes
+
+  roles:
+   - { role: install_httpd, when: ansible_os_family == "RedHat" }
