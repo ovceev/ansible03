@@ -1,0 +1,69 @@
+---
+
+- name: Install vsftpd, firewalld, policycoreutils, libselinux
+  yum:
+    name: '{{ item }}'
+    state: latest
+  loop:
+    - vsftpd
+    - firewalld
+    - policycoreutils-python-utils
+    - libselinux-python3
+
+- name: FTP and Firewalld autostart enable
+  service:
+    name: '{{ item }}'
+    state: started
+    enabled: yes
+  loop:
+    - vsftpd
+    - firewalld
+
+- name: Create a directory /var/ftp/pub/
+  file:
+    path: /var/ftp/pub/
+    state: directory
+    mode: 0555
+
+- name: Create a directory /var/ftp/pub/upload
+  file:
+    path: /var/ftp/pub/upload
+    state: directory
+    mode: 0766
+
+- name: Generate a vsftpd config file
+  template: 
+    src: vsftpd.j2
+    dest: /etc/vsftpd/vsftpd.conf
+  vars:
+    anonymous_enable: YES
+    anon_upload_enable: YES
+    anon_mkdir_write_enable: YES
+  notify: Restart FTP
+
+- name: Open FTP ports
+  firewalld:
+    port: '{{ item }}'
+    permanent: yes
+    state: enabled
+  loop:
+    - 20/tcp
+    - 20/udp
+    - 21/tcp
+    - 21/udp
+  notify: Restart Firewalld
+
+- name: Allow vsftpd modify files in /var/ftp/pub
+  sefcontext:
+    target: '/var/ftp/pub(/.*)?'
+    setype: public_content_rw_t
+    state: present
+
+- name: Apply the file context
+  command: restorecon -irv /var/ftp/pub
+
+- name: Set allow_ftpd_anon_write
+  seboolean:
+    name: allow_ftpd_anon_write 
+    state: yes
+    persistent: yes

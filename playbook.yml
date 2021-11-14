@@ -5,3 +5,4 @@
 
   roles:
    - { role: install_httpd, when: ansible_os_family == "RedHat" }
+   - { role: install_vsftpd, when: ansible_os_family == "RedHat" }
